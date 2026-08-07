@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'core/theme/app_theme.dart';
+import 'screens/home/main_screen.dart';
 
 void main() {
   runApp(const XefApp());
@@ -14,14 +16,7 @@ class XefApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Xef',
       theme: AppTheme.lightTheme,
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'Xef',
-            style: TextStyle(fontSize: 62, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      home: const MainScreen(),
     );
   }
 }
