@@ -1,0 +1,8 @@
+.gradle/
+build/
+**/build/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+xef-backend/src/main/resources/application.properties
