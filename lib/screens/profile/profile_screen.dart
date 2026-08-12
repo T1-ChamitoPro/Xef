@@ -1,39 +1,54 @@
 import 'package:flutter/material.dart';
 
-import '../auth/auth_manager.dart';
+import '../../core/theme/app_colors.dart';
+import '../../services/auth_service.dart';
+import '../../storage/auth_storage.dart';
 import '../auth/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _cerrarSesion(BuildContext context) async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Cerrar sesión'),
-          content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-    if (confirmar != true) return;
+class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthService _authService = AuthService();
+  final AuthStorage _authStorage = AuthStorage();
 
-    final authManager = AuthManager();
+  String? nombre;
+  String? email;
 
-    await authManager.logout();
+  bool cargando = true;
 
-    if (!context.mounted) return;
+  @override
+  void initState() {
+    super.initState();
+    cargarPerfil();
+  }
+
+  Future<void> cargarPerfil() async {
+    final perfil = await _authService.obtenerPerfil();
+
+    if (!mounted) return;
+
+    if (perfil != null) {
+      setState(() {
+        nombre = perfil['nombre'];
+        email = perfil['email'];
+        cargando = false;
+      });
+    } else {
+      setState(() {
+        cargando = false;
+      });
+    }
+  }
+
+  Future<void> cerrarSesion() async {
+    await _authStorage.eliminarToken();
+
+    if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -44,27 +59,60 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (cargando) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil')),
+      appBar: AppBar(title: const Text('Mi perfil')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.person, size: 80),
+            Center(
+              child: CircleAvatar(
+                radius: 45,
+                backgroundColor: AppColors.primary,
+                child: Text(
+                  nombre != null && nombre!.isNotEmpty
+                      ? nombre![0].toUpperCase()
+                      : '?',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
 
             const Text(
-              'Mi perfil',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              'Nombre',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
 
             const SizedBox(height: 8),
 
+            Text(
+              nombre ?? 'No disponible',
+              style: const TextStyle(fontSize: 18),
+            ),
+
+            const SizedBox(height: 24),
+
             const Text(
-              'Gestiona tu cuenta de Xef.',
-              style: TextStyle(fontSize: 16),
+              'Correo electrónico',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              email ?? 'No disponible',
+              style: const TextStyle(fontSize: 18),
             ),
 
             const Spacer(),
@@ -72,11 +120,13 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => _cerrarSesion(context),
+                onPressed: cerrarSesion,
                 icon: const Icon(Icons.logout),
                 label: const Text('Cerrar sesión'),
               ),
             ),
+
+            const SizedBox(height: 16),
           ],
         ),
       ),

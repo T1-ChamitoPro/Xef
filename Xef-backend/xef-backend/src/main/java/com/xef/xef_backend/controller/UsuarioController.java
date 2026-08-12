@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import com.xef.xef_backend.dto.RegistroRequest;
 import com.xef.xef_backend.dto.UsuarioResponse;
-import com.xef.xef_backend.model.Usuario;
 import com.xef.xef_backend.service.UsuarioService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,18 +29,11 @@ public class UsuarioController {
         return usuarioService.registrar(request);
     }
 
+    @GetMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/perfil")
-    public UsuarioResponse perfil(
-            org.springframework.security.core.Authentication authentication) {
-
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-
-        return new UsuarioResponse(
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getEmail()
-        );
+    public UsuarioResponse obtenerUsuarioActual(Authentication authentication) {
+        String email = authentication.getName();
+        return usuarioService.obtenerPorEmail(email);
     }
 }
 

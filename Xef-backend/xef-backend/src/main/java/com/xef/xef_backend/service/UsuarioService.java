@@ -2,6 +2,8 @@ package com.xef.xef_backend.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.xef.xef_backend.dto.RegistroRequest;
 import com.xef.xef_backend.dto.UsuarioResponse;
@@ -42,6 +44,21 @@ public class UsuarioService {
                 usuarioGuardado.getId(),
                 usuarioGuardado.getNombre(),
                 usuarioGuardado.getEmail()
+        );
+    }
+
+    public UsuarioResponse obtenerPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(
+            () -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Usuario no encontrado"
+            )
+        );
+
+        return new UsuarioResponse(
+            usuario.getId(),
+            usuario.getNombre(),
+            usuario.getEmail()
         );
     }
 }
