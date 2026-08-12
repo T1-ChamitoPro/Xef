@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../auth/auth_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/login_screen.dart';
+import '../home/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,18 +15,35 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final AuthManager _authManager = AuthManager();
+
   @override
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 2), () {
-      if (!mounted) return;
+    _verificarSesion();
+  }
 
+  Future<void> _verificarSesion() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    final estaLogueado = await _authManager.estaLogueado();
+
+    if (!mounted) return;
+
+    if (estaLogueado) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
-    });
+    }
   }
 
   @override
