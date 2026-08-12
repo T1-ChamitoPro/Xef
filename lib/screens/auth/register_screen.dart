@@ -244,7 +244,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       setState(() {
                         obscureConfirmPassword = !obscureConfirmPassword;
                       });
-                    },
+                  },
                   ),
                 ),
               ),
