@@ -1,10 +1,11 @@
 package com.xef.xef_backend.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.xef.xef_backend.dto.ActualizarUsuarioRequest;
 import com.xef.xef_backend.dto.RegistroRequest;
 import com.xef.xef_backend.dto.UsuarioResponse;
 import com.xef.xef_backend.model.Usuario;
@@ -60,5 +61,36 @@ public class UsuarioService {
             usuario.getNombre(),
             usuario.getEmail()
         );
+    }
+
+    public UsuarioResponse actualizarUsuario(
+        String emailActual,
+        ActualizarUsuarioRequest request) {
+            Usuario usuario = usuarioRepository.findByEmail(emailActual)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Usuario no encontrado"
+                ));
+
+            if (!usuario.getEmail().equals(request.getEmail())
+                    && usuarioRepository.existsByEmail(request.getEmail())) {
+                        
+                        throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "El correo ya esta registrado"
+                        );
+                    }
+
+            usuario.setNombre(request.getNombre());
+            usuario.setEmail(request.getEmail());
+
+            Usuario usuarioActualizado = usuarioRepository.save(usuario);
+
+            return new UsuarioResponse(
+                usuarioActualizado.getId(),
+                usuarioActualizado.getNombre(),
+                usuarioActualizado.getEmail()
+
+            );
     }
 }
