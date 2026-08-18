@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../storage/auth_storage.dart';
 
 class AuthService {
-  final String baseUrl = 'http://10.0.2.2:8080';
+  final String baseUrl = 'http://192.168.0.22:8080';
 
   final AuthStorage _authStorage = AuthStorage();
 
@@ -62,5 +62,27 @@ class AuthService {
     } catch (_) {
       return 'No fue posible crear la cuenta.';
     }
+  }
+
+  Future<Map<String, dynamic>?> obtenerPerfil() async {
+    final token = await _authStorage.obtenerToken();
+
+    if (token == null) {
+      return null;
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/usuarios/me'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    return null;
   }
 }

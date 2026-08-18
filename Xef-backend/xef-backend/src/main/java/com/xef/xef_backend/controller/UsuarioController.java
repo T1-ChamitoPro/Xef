@@ -1,14 +1,16 @@
 package com.xef.xef_backend.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xef.xef_backend.dto.ActualizarUsuarioRequest;
 import com.xef.xef_backend.dto.RegistroRequest;
 import com.xef.xef_backend.dto.UsuarioResponse;
-import com.xef.xef_backend.model.Usuario;
 import com.xef.xef_backend.service.UsuarioService;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,18 +31,22 @@ public class UsuarioController {
         return usuarioService.registrar(request);
     }
 
+    @GetMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/perfil")
-    public UsuarioResponse perfil(
-            org.springframework.security.core.Authentication authentication) {
+    public UsuarioResponse obtenerUsuarioActual(Authentication authentication) {
+        String email = authentication.getName();
+        return usuarioService.obtenerPorEmail(email);
+    }
 
-        Usuario usuario = (Usuario) authentication.getPrincipal();
+    @PutMapping("/me")
+    @SecurityRequirement(name = "bearerAuth")
+    public UsuarioResponse actualizarUsuario(
+        Authentication authentication,
+        @Valid @RequestBody ActualizarUsuarioRequest request
+    ) {
+        String emailActual = authentication.getName();
 
-        return new UsuarioResponse(
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getEmail()
-        );
+        return usuarioService.actualizarUsuario(emailActual, request);
     }
 }
 
